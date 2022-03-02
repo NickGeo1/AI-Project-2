@@ -142,14 +142,7 @@ class MultiAgentSearchAgent(Agent):
         self.index = 0 # Pacman is always agent index 0
         self.evaluationFunction = util.lookup(evalFn, globals())
         self.depth = int(depth)
-
-        self.ghostpoints = {}
      
-def get_key(val, dict):
-        for key, value in dict.items():
-                if val == value:
-                    return key
-
 class MinimaxAgent(MultiAgentSearchAgent):
     """
     Your minimax agent (question 2)
