@@ -15,6 +15,7 @@
 from util import manhattanDistance
 from game import Directions
 import random, util
+import sys
 
 from game import Agent, AgentState
 
@@ -173,7 +174,9 @@ class MinimaxAgent(MultiAgentSearchAgent):
         """
 
         "*** YOUR CODE HERE ***"
-        
+        #return the minimax-optimal action of pacman.
+        #We recursively expand the minimax tree starting from player 0(pacman) and we add one to player index at each tree level
+        #We recursively return the optimal action and utility to each parent expanded
         return self.miniMax(gameState,0,self.depth)[1]
 
     def miniMax(self, gameState, player, depth):
@@ -231,6 +234,70 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
+
+        return self.miniMaxAlphaBetaPruning(gameState,0,self.depth,-sys.maxsize,sys.maxsize)[1]
+
+    def miniMaxAlphaBetaPruning(self, gameState, player, depth, a, b):
+
+        if(gameState.isWin() or gameState.isLose() or depth == 0): #if this gamestate is Terminal (Win, Lose, or reached the maxdepth)
+            return (self.evaluationFunction(gameState), None) #return the evaluation value of the state as util and No action
+
+        if(player == 0):        #if pacman is playing
+            utility = -sys.maxsize #initialize utility and max_action
+            max_action = 0
+            for action in gameState.getLegalActions(0):               
+                successor = gameState.generateSuccessor(0, action)  #generate pacman successor
+
+                #If the successor's utility is greater than the current utility update the utility value
+                #We recursively call miniMaxAlphaBetaPruning to calculate successor's utility
+                utility = max(self.miniMaxAlphaBetaPruning(successor, (player+1)%gameState.getNumAgents(), depth, a, b)[0], utility)
+                
+                #Note that above the current max node we could have a min node. If the successor of this max node
+                #has a utility greater than the current minimum utility of the max nodes at this level, that means we can stop searching this max
+                #node because we need to find a smaller value max node for the min parent node.
+                #b is the current minimum value of the max nodes
+                if (utility > b):
+                    return (utility, action)
+                #a is the current maximum utility value of the min childs of this max node
+                old_a = a
+                a = max(a, utility) #we update a with the child utility if child utility > a
+                if(a > old_a):
+                    max_action = action #If a beacame greater, that means the new min child node has bigger utility
+                                        #so we update the max action 
+
+            return (utility, max_action) #return max utility and max action
+
+        elif (player != 0): #else any other ghost is playing
+            #if the ghost player is the last, we substract one from the remaining depth to search
+            if(player == gameState.getNumAgents() - 1): 
+                depth -= 1
+
+            utility = sys.maxsize #initialize utility and min_action
+            min_action = 0
+            for action in gameState.getLegalActions(player):
+                successor = gameState.generateSuccessor(player, action)     
+                
+                #If the successor's utility is less than the current utility update the utility value
+                #We recursively call miniMaxAlphaBetaPruning to calculate successor's utility
+                utility = min(self.miniMaxAlphaBetaPruning(successor, (player+1)%gameState.getNumAgents(), depth, a, b)[0], utility)
+
+                #Note that above the current min node we could have a max node. If the successor of this min node
+                #has a utility less than the current maximum utility of the min nodes at this level, that means we can stop searching this min
+                #node because we need to find a greater value min node for the max parent node.
+                #a is the current maximum value of the min nodes
+                #In case we have a min node parent this does not apply.
+                if (utility < a):
+                    return (utility, action)
+                #b is the current minimum utility value of the max/min childs of this min node
+                old_b = b
+                b = min(b, utility) #we update b with the child utility if child utility < b
+                if(b < old_b):
+                    min_action = action #If b beacame smaller, that means the new max/min child node has smaller utility
+                                        #so we update the min action
+
+            return (utility, min_action) #return min utility and min action
+
+
         util.raiseNotDefined()
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
