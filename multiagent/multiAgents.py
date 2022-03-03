@@ -285,7 +285,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 #has a utility less than the current maximum utility of the min nodes at this level, that means we can stop searching this min
                 #node because we need to find a greater value min node for the max parent node.
                 #a is the current maximum value of the min nodes
-                #In case we have a min node parent this does not apply.
+                #In case we have a min node parent this works the same.
                 if (utility < a):
                     return (utility, action)
                 #b is the current minimum utility value of the max/min childs of this min node
