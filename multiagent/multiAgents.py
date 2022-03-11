@@ -371,6 +371,33 @@ def betterEvaluationFunction(currentGameState):
     DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
+
+    pos = currentGameState.getPacmanPosition()
+    foodL = currentGameState.getFood()
+    currentGhostPositions = currentGameState.getGhostPositions()
+    caps = currentGameState.getCapsules()
+    capsules = len(caps)
+
+    min_distance = -1
+    for dot in foodL:
+        distance = manhattanDistance(pos, dot)
+        if distance <= min_distance:
+            min_distance = distance
+
+
+    ghost_distances_and_points = [(manhattanDistance(pos,ghostState),ghostState) for ghostState in currentGhostPositions]
+    ghost_distances = [gd[0] for gd in ghost_distances_and_points]
+
+    ghost_pacman_distance = 1
+    is_close = 0
+    for dist in ghost_distances:
+        ghost_pacman_distance += dist
+        if dist <= 3:
+            is_close += 1
+
+    return currentGameState.getScore() + (1/min_distance) - is_close - (1/ghost_pacman_distance) - capsules
+
+
     util.raiseNotDefined()
 
 # Abbreviation
