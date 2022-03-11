@@ -313,6 +313,54 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
+        return self.expectiMax(gameState,0,self.depth)[1]
+
+    def expectiMax(self, gameState, player, depth):
+
+        util_actions = []
+
+        if(gameState.isWin() or gameState.isLose() or depth == 0):
+            return (self.evaluationFunction(gameState), None)
+
+        if(player == 0):
+            for action in gameState.getLegalActions(0):
+                successor = gameState.generateSuccessor(0, action)
+                utility = self.expectiMax(successor,(player+1)%gameState.getNumAgents(), depth)[0]
+                util_actions.append((utility, action))
+
+            utils = [putil[0] for putil in util_actions]
+            actions = [action[1] for action in util_actions]
+
+            max_util = max(utils)
+            max_action = actions[utils.index(max_util)]
+
+            return (max_util, max_action)
+
+        else:
+            probability = 0.0
+
+            if(player == gameState.getNumAgents() - 1):
+                depth -= 1
+
+            if len(gameState.getLegalActions(player)) != 0:
+                probability = 1.0/len(gameState.getLegalActions(player))
+
+            for ghostaction in gameState.getLegalActions(player):
+                ghostsuccessor = gameState.generateSuccessor(player, ghostaction)
+                utility = self.expectiMax(ghostsuccessor,(player+1)%gameState.getNumAgents(), depth)[0]
+                util_actions.append((utility, ghostaction))
+
+            ghost_utils = [putil[0] for putil in util_actions]
+            ghost_actions = [action[1] for action in util_actions]
+
+            min_ghost_util = 0.0
+            for putil in ghost_utils:
+                min_ghost_util += putil*probability
+
+            min_action = ghost_actions[0]
+
+            return (min_ghost_util, min_action)
+
         util.raiseNotDefined()
 
 def betterEvaluationFunction(currentGameState):
